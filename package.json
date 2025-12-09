@@ -1,0 +1,27 @@
+{
+  "name": "sistema-de-biblioteca-universitaria-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KauaNca/sistema-de-biblioteca-universitaria-backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KauaNca/sistema-de-biblioteca-universitaria-backend/issues"
+  },
+  "homepage": "https://github.com/KauaNca/sistema-de-biblioteca-universitaria-backend#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "mongoose": "^9.0.1"
+  }
+}
