@@ -1,33 +1,14 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const { body } = require("express-validator");
-const { validarCampos } = require("../middlewares/validate");
-const {
-  getLivros,
-  getLivroById,
-  criarLivro,
-  atualizarLivro,
-  deletarLivro,
-  getEstatisticas,
-} = require("../controllers/livroController");
-// Validações
-const validarLivro = [
-  body("titulo").notEmpty().withMessage("Título é obrigatório"),
-  body("isbn")
-    .matches(/^(?:\d{10}|\d{13})$/)
-    .withMessage("ISBN inválido"),
-  body("autor").isMongoId().withMessage("ID do autor inválido"),
-  validarCampos,
-];
+const livroController = require('../controllers/livroController');
 
-// Rotas públicas
-router.get("/", getLivros);
-router.get("/:id", getLivroById);
+// Todas as rotas são públicas
 
-// Apenas administradores
-router.post("/", validarLivro, criarLivro);
-router.put("/:id", validarLivro, atualizarLivro);
-router.delete("/:id", deletarLivro);
-router.get("/estatisticas/geral", getEstatisticas);
+// CRUD completo
+router.get('/', livroController.getLivros);
+router.get('/:id', livroController.getLivroById);
+router.post('/', livroController.createLivro);
+router.put('/:id', livroController.updateLivro);
+router.delete('/:id', livroController.deleteLivro);
 
 module.exports = router;

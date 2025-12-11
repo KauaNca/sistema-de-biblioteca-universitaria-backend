@@ -1,52 +1,38 @@
+// src/app.js - VERSÃO SIMPLIFICADA
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/database');
 
-// Importar rotas
-const authRoutes = require('./routes/alunoRouter');
+// Importar rotas (SEM auth)
 const livroRoutes = require('./routes/livroRouter');
-// const usuarioRoutes = require('./routes/usuarioRouter');
-// const emprestimoRoutes = require('./routes/emprestimoRoutes');
+const autorRoutes = require('./routes/autorRouter');
+const alunoRoutes = require('./routes/alunoRouter');
 
 // Conectar ao banco
 connectDB();
 
 const app = express();
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // limite por IP
-  message: 'Muitas requisições deste IP, tente novamente após 15 minutos'
-});
-
 // Middlewares
-app.use(helmet()); // Segurança
-app.use(cors()); // Cross-Origin
-app.use(express.json()); // Body parser
+app.use(cors());
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Aplicar rate limit apenas nas rotas de auth
-app.use('/api/auth', limiter);
-
-// Rotas
-app.use('/api/auth', authRoutes);
+// Rotas (TODAS públicas)
 app.use('/api/livros', livroRoutes);
-// app.use('/api/usuarios', usuarioRoutes);
-// app.use('/api/emprestimos', emprestimoRoutes);
+app.use('/api/autores', autorRoutes);
+app.use('/api/alunos', alunoRoutes);
 
-// Rota raiz
+// Rota raiz SIMPLIFICADA
 app.get('/', (req, res) => {
   res.json({
-    message: 'Bem-vindo à API do Sistema de Biblioteca Universitária',
+    message: '📚 API do Sistema de Biblioteca Universitária',
     version: '1.0.0',
+    description: 'API simplificada para gerenciamento de biblioteca',
     endpoints: {
-      auth: '/api/auth',
-      livros: '/api/livros',
-      usuarios: '/api/usuarios',
-      emprestimos: '/api/emprestimos'
+      livros: 'GET,POST /api/livros',
+      autores: 'GET,POST /api/autores',
+      alunos: 'GET,POST /api/alunos'
     }
   });
 });
@@ -61,13 +47,10 @@ app.use((req, res) => {
 
 // Middleware de erro
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-
-  res.status(err.statusCode || 500).json({
+  console.error('Erro:', err.stack);
+  res.status(500).json({
     success: false,
-    error: process.env.NODE_ENV === 'development' 
-      ? err.message 
-      : 'Erro interno do servidor'
+    error: 'Erro interno do servidor'
   });
 });
 

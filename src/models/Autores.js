@@ -1,24 +1,19 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const autoresSchema = new mongoose.Schema({
-  name: {
-    type: String, //tipo
-    required: true, //campo obrigatório
-    trim: true, //sem espaços nas extremidades
-  },
-  nacionalidade: {
+const autorSchema = new mongoose.Schema({
+  nome: {
     type: String,
-    required: true,
+    required: [true, 'Nome é obrigatório'],
+    trim: true
   },
-  biografia: {
-    type: String,
-    required: true,
-    minlength: 15,
-  },
+  nacionalidade: String,
+  dataNascimento: Date,
+  biografia: String,
+  // Removemos o array de livros se não for necessário
   createdAt: {
     type: Date,
-    default: Date.now, //pegar a data atual
-  },
+    default: Date.now
+  }
 });
 
-module.exports = mongoose.model("Autores", autoresSchema);
+module.exports = mongoose.model('Autores', autorSchema);

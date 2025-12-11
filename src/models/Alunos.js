@@ -3,34 +3,33 @@ const mongoose = require('mongoose');
 const alunoSchema = new mongoose.Schema({
   nome: {
     type: String,
-    required: [true, 'O nome é obrigatório'],
+    required: [true, 'Nome é obrigatório'],
     trim: true
   },
   matricula: {
     type: String,
-    required: [true, 'A matrícula é obrigatória'],
+    required: [true, 'Matrícula é obrigatória'],
     unique: true,
-    uppercase: true //DÁ UMA OLHADA NISSO
+    uppercase: true
   },
   email: {
     type: String,
-    required: [true, 'O email é obrigatório'],
+    required: [true, 'Email é obrigatório'],
     unique: true,
-    lowercase: true,
-    match: [/^\S+@\S+\.\S+$/, 'Email inválido']
+    lowercase: true
   },
   curso: String,
   telefone: String,
-  dataNascimento: Date,
   dataCadastro: {
     type: Date,
     default: Date.now
   },
-  emprestimosAtivos: {
-    type: Number,
-    default: 0,
-    max: [5, 'Limite de empréstimos excedido']
+  status: {
+    type: String,
+    enum: ['ativo', 'inativo'],
+    default: 'ativo'
   }
 });
 
-module.exports = mongoose.model('Aluno', alunoSchema);
+// SEM bcrypt, SEM métodos de senha
+module.exports = mongoose.model('Alunos', alunoSchema);

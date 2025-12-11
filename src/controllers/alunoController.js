@@ -1,114 +1,118 @@
-const Usuario = require("../models/Alunos");
-const jwt = require("jsonwebtoken");
+const Aluno = require('../models/Alunos');
 
-// Gerar token JWT
-const gerarToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
-  });
-};
-
-// @desc    Registrar usuário
-// @route   POST /api/auth/registrar
-// @access  Público
-exports.registrar = async (req, res) => {
+// POST /api/alunos - Criar aluno
+exports.createAluno = async (req, res) => {
   try {
-    const { nome, matricula, email } = req.body;
-
-    // Verificar se usuário já existe
-    const usuarioExiste = await Usuario.findOne({
-      $or: [{ email }, { matricula }],
-    });
-
-    if (usuarioExiste) {
-      return res.status(400).json({
-        success: false,
-        error: "Email ou matrícula já cadastrados",
-      });
-    }
-
-    // Criar usuário
-    const usuario = await Usuario.create({
-      nome,
-      matricula,
-      email,
-    });
-
-    // Retornar token
-    const token = gerarToken(usuario._id);
-
+    const aluno = await Aluno.create(req.body);
+    
     res.status(201).json({
       success: true,
-      token,
-      usuario: {
-        id: usuario._id,
-        nome: usuario.nome,
-        email: usuario.email,
-        matricula: usuario.matricula,
-      },
+      data: aluno
     });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email ou matrícula já cadastrados'
+      });
+    }
     res.status(400).json({
       success: false,
-      error: error.message,
+      error: error.message
     });
   }
 };
 
-// @desc    Obter perfil do usuário logado
-// @route   GET /api/auth/me
-// @access  Privado
-exports.getMe = async (req, res) => {
+// GET /api/alunos - Listar todos
+exports.getAlunos = async (req, res) => {
   try {
-    const usuario = await Usuario.findById(req.usuario.id);
-
+    const alunos = await Aluno.find();
+    
     res.json({
       success: true,
-      data: usuario,
+      count: alunos.length,
+      data: alunos
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: error.message,
+      error: 'Erro ao buscar alunos'
     });
   }
 };
 
-// @desc    Atualizar perfil
-// @route   PUT /api/auth/atualizar
-// @access  Privado
-exports.atualizarPerfil = async (req, res) => {
+// GET /api/alunos/:id - Buscar por ID
+exports.getAlunoById = async (req, res) => {
   try {
-    const camposParaAtualizar = {
-      nome: req.body.nome,
-      email: req.body.email,
-      telefone: req.body.telefone,
-    };
-
-    // Remover campos undefined
-    Object.keys(camposParaAtualizar).forEach(
-      (key) =>
-        camposParaAtualizar[key] === undefined &&
-        delete camposParaAtualizar[key]
-    );
-
-    const usuario = await Usuario.findByIdAndUpdate(
-      req.usuario.id,
-      camposParaAtualizar,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-
+    const aluno = await Aluno.findById(req.params.id);
+    
+    if (!aluno) {
+      return res.status(404).json({
+        success: false,
+        error: 'Aluno não encontrado'
+      });
+    }
+    
     res.json({
       success: true,
-      data: usuario,
+      data: aluno
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao buscar aluno'
+    });
+  }
+};
+
+// PUT /api/alunos/:id - Atualizar
+exports.updateAluno = async (req, res) => {
+  try {
+    const aluno = await Aluno.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    
+    if (!aluno) {
+      return res.status(404).json({
+        success: false,
+        error: 'Aluno não encontrado'
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: aluno
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      error: error.message,
+      error: error.message
+    });
+  }
+};
+
+// DELETE /api/alunos/:id - Remover
+exports.deleteAluno = async (req, res) => {
+  try {
+    const aluno = await Aluno.findByIdAndDelete(req.params.id);
+    
+    if (!aluno) {
+      return res.status(404).json({
+        success: false,
+        error: 'Aluno não encontrado'
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Aluno removido com sucesso'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
     });
   }
 };

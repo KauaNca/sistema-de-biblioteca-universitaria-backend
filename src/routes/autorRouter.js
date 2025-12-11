@@ -1,12 +1,15 @@
+// routes/autorRouter.js - COM NOMES CORRETOS
 const express = require('express');
 const router = express.Router();
-const autoresController = require('../controllers/autoresController');
+const autorController = require('../controllers/autoresController');
 
-// Rotas CRUD Autor
-router.post('/autor', autoresController.createUser);
-router.get('/autor', autoresController.getautor);
-router.get('/autor/:id', autoresController.getUserById);
-router.put('/autor/:id', autoresController.updateUser);
-router.delete('/autor/:id', autoresController.deleteUser);
+// Rotas públicas
+router.get('/', autorController.getAutores);
+router.get('/:id', autorController.getAutorById);
+
+// Rotas protegidas
+router.post('/', autorController.createAutor);      // ← NOME CORRETO
+router.put('/:id', autorController.updateAutor);    // ← NOME CORRETO
+router.delete('/:id', autorController.deleteAutor); // ← NOME CORRETO
 
 module.exports = router;

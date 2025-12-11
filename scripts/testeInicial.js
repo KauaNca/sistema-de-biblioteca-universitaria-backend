@@ -1,104 +1,143 @@
-// scripts/teste-corrigido.js
-require('dotenv').config();
+// scripts/teste-simplificado.js
+const axios = require('axios');
 
-async function testeCorrigido() {
-  console.log('🧪 TESTE CORRIGIDO - PASSO A PASSO\n');
+const API_URL = 'http://localhost:3000/api';
+
+async function testeSimplificado() {
+  console.log('🧪 TESTE DA API SIMPLIFICADA\n');
   
-  // PASSO 1: Verificar .env
-  console.log('1. 📋 Verificando configuração...');
-  if (!process.env.MONGODB_URI) {
-    console.error('❌ MONGODB_URI não encontrada no .env');
-    return;
-  }
+  let autorId = '';
+  let livroId = '';
+  let alunoId = '';
   
-  const uriOculta = process.env.MONGODB_URI.replace(/:[^:]*@/, ':****@');
-  console.log('   URI (oculta):', uriOculta);
-  console.log('   Comprimento:', process.env.MONGODB_URI.length);
-  
-  // PASSO 2: Verificar mongoose
-  console.log('\n2. 🔧 Verificando Mongoose...');
-  const mongoose = require('mongoose');
-  console.log('   Versão do Mongoose:', mongoose.version);
-  console.log('   mongoose.connect existe?', typeof mongoose.connect === 'function');
-  console.log('   mongoose.connect é função?', typeof mongoose.connect);
-  
-  // PASSO 3: Conectar DIRETAMENTE (teste simples)
-  console.log('\n3. 🔗 Testando conexão direta...');
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('   ✅ Conexão direta funcionou!');
-    console.log('   Estado:', mongoose.connection.readyState); // 1 = conectado
-    console.log('   Host:', mongoose.connection.host);
+    // 1. Testar API
+    console.log('1. 🔗 Testando conexão...');
+    const home = await axios.get('http://localhost:3000/');
+    console.log(`   ✅ ${home.data.message}\n`);
     
-    // PASSO 4: Testar operação básica
-    console.log('\n4. 📝 Testando operação no banco...');
+    // 2. Testar Autores
+    console.log('2. ✍️  Testando Autores...');
     
-    // Criar collection temporária
-    const Teste = mongoose.model('TesteTemp', {
-      nome: String,
-      data: { type: Date, default: Date.now }
-    });
+    // Criar autor
+    const autorData = {
+      nome: 'Carlos Drummond de Andrade',
+      nacionalidade: 'Brasileiro',
+      dataNascimento: '1902-10-31'
+    };
     
-    // Inserir
-    const doc = await Teste.create({ nome: 'Teste de conexão' });
-    console.log('   Documento criado ID:', doc._id);
+    const autorRes = await axios.post(`${API_URL}/autores`, autorData);
+    autorId = autorRes.data.data._id;
+    console.log(`   ✅ Autor criado: ${autorRes.data.data.nome}`);
     
-    // Contar
-    const count = await Teste.countDocuments();
-    console.log('   Total documentos:', count);
+    // Listar autores
+    const autores = await axios.get(`${API_URL}/autores`);
+    console.log(`   📋 Total autores: ${autores.data.count}\n`);
     
-    // Limpar
-    await Teste.deleteMany({});
-    console.log('   Documentos de teste removidos');
+    // 3. Testar Livros
+    console.log('3. 📚 Testando Livros...');
     
-    // PASSO 5: Testar database.js
-    console.log('\n5. 🗄️  Testando arquivo database.js...');
-    try {
-      const connectDB = require('../src/config/database');
-      console.log('   ✅ Arquivo carregado');
-      console.log('   connectDB é função?', typeof connectDB === 'function');
-      
-      // Se já está conectado, vamos testar de outra forma
-      console.log('   💡 Já conectado via mongoose.connect direto');
-      
-    } catch (err) {
-      console.error('   ❌ Erro ao carregar database.js:', err.message);
-    }
+    // Criar livro
+    const livroData = {
+      titulo: 'Sentimento do Mundo',
+      isbn: '9788525401234',
+      autor: autorId,
+      categoria: 'Poesia',
+      anoPublicacao: 1940
+    };
     
-    // PASSO 6: Desconectar
-    console.log('\n6. 🔌 Finalizando...');
-    await mongoose.disconnect();
-    console.log('   Desconectado com sucesso');
+    const livroRes = await axios.post(`${API_URL}/livros`, livroData);
+    livroId = livroRes.data.data._id;
+    console.log(`   ✅ Livro criado: "${livroRes.data.data.titulo}"`);
     
-    console.log('\n🎉 TODOS OS TESTES PASSARAM!');
-    console.log('✅ Seu sistema está pronto para uso!');
+    // Listar livros
+    const livros = await axios.get(`${API_URL}/livros`);
+    console.log(`   📋 Total livros: ${livros.data.count}`);
+    
+    // Buscar livro com autor
+    const livroComAutor = await axios.get(`${API_URL}/livros/${livroId}`);
+    console.log(`   🔍 Livro encontrado: "${livroComAutor.data.data.titulo}"`);
+    console.log(`   👤 Autor: ${livroComAutor.data.data.autor?.nome || 'Não populado'}\n`);
+    
+    // 4. Testar Alunos
+    console.log('4. 👥 Testando Alunos...');
+    
+    // Criar aluno
+    const alunoData = {
+      nome: 'Ana Silva',
+      matricula: '20230001',
+      email: 'ana@email.com',
+      curso: 'Letras'
+    };
+    
+    const alunoRes = await axios.post(`${API_URL}/alunos`, alunoData);
+    alunoId = alunoRes.data.data._id;
+    console.log(`   ✅ Aluno criado: ${alunoRes.data.data.nome}`);
+    
+    // Listar alunos
+    const alunos = await axios.get(`${API_URL}/alunos`);
+    console.log(`   📋 Total alunos: ${alunos.data.count}\n`);
+    
+    // 5. Limpar dados de teste
+    console.log('5. 🧹 Limpando dados de teste...');
+    
+    await axios.delete(`${API_URL}/livros/${livroId}`);
+    console.log('   ✅ Livro removido');
+    
+    await axios.delete(`${API_URL}/autores/${autorId}`);
+    console.log('   ✅ Autor removido');
+    
+    await axios.delete(`${API_URL}/alunos/${alunoId}`);
+    console.log('   ✅ Aluno removido');
+    
+    // 6. Verificar limpeza
+    console.log('\n6. 📊 Verificando limpeza...');
+    
+    const finalAutores = await axios.get(`${API_URL}/autores`);
+    const finalLivros = await axios.get(`${API_URL}/livros`);
+    const finalAlunos = await axios.get(`${API_URL}/alunos`);
+    
+    console.log(`   Autores: ${finalAutores.data.count}`);
+    console.log(`   Livros: ${finalLivros.data.count}`);
+    console.log(`   Alunos: ${finalAlunos.data.count}`);
+    
+    console.log('\n' + '='.repeat(50));
+    console.log('🎉 API SIMPLIFICADA FUNCIONANDO PERFEITAMENTE!');
+    console.log('='.repeat(50));
+    
+    console.log('\n🔗 Endpoints disponíveis:');
+    console.log('   GET  http://localhost:3000/');
+    console.log('   GET  http://localhost:3000/api/autores');
+    console.log('   POST http://localhost:3000/api/autores');
+    console.log('   GET  http://localhost:3000/api/livros');
+    console.log('   POST http://localhost:3000/api/livros');
+    console.log('   GET  http://localhost:3000/api/alunos');
+    console.log('   POST http://localhost:3000/api/alunos');
     
   } catch (error) {
-    console.error('\n❌ ERRO NO TESTE:', error.message);
+    console.error('\n❌ ERRO:', error.message);
     
-    // Análise detalhada
-    console.log('\n🔍 DIAGNÓSTICO:');
-    
-    if (error.message.includes('querySrv ENOTFOUND')) {
-      console.log('   💡 Problema de DNS');
-      console.log('   Tente: ping sistema-biblioteca-univ.rcjuqgh.mongodb.net');
+    if (error.response) {
+      console.error('   Status:', error.response.status);
+      console.error('   Data:', error.response.data);
     }
     
-    if (error.message.includes('bad auth') || error.message.includes('Authentication failed')) {
-      console.log('   💡 Problema de autenticação');
-      console.log('   1. Verifique usuário/senha no .env');
-      console.log('   2. URL encode caracteres especiais: @ → %40');
-      console.log('   3. No Atlas: Database Access → Verificar permissões');
-    }
-    
-    if (error.message.includes('MongoServerSelectionError')) {
-      console.log('   💡 Problema de Network Access');
-      console.log('   No Atlas: Network Access → Adicione IP 0.0.0.0/0');
-    }
-    
-    process.exit(1);
+    // Tentar limpar se algo deu errado
+    try {
+      if (livroId) await axios.delete(`${API_URL}/livros/${livroId}`);
+      if (autorId) await axios.delete(`${API_URL}/autores/${autorId}`);
+      if (alunoId) await axios.delete(`${API_URL}/alunos/${alunoId}`);
+    } catch { /* Ignora erros na limpeza */ }
   }
 }
 
 // Executar
-testeCorrigido();
+try {
+  require('axios');
+  testeSimplificado();
+} catch {
+  console.log('Instalando axios...');
+  const { execSync } = require('child_process');
+  execSync('npm install axios', { stdio: 'inherit' });
+  console.log('Execute: node scripts/teste-simplificado.js');
+}
