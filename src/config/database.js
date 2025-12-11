@@ -1,29 +1,33 @@
+// src/config/database.js - VERSÃO FUNCIONAL
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
     console.log('🔗 Conectando ao MongoDB Atlas...');
     
-    // ✅ FORMA CORRETA (Mongoose 6+):
+    // Conexão SIMPLES - Mongoose 6+ não precisa de opções
     await mongoose.connect(process.env.MONGODB_URI);
     
-    console.log('✅ MongoDB Atlas conectado!');
-    console.log(`📊 Banco: ${mongoose.connection.db?.databaseName || 'não identificado'}`);
-    console.log(`📍 Host: ${mongoose.connection.host}`);
+    console.log('✅ MongoDB Atlas conectado com sucesso!');
+    console.log(`📊 Banco: ${mongoose.connection.db?.databaseName || 'default'}`);
+    
+    return true;
     
   } catch (error) {
-    console.error('❌ Erro de conexão:', error.message);
+    console.error('❌ Erro ao conectar ao MongoDB:');
+    console.error('   Mensagem:', error.message);
     
-    // Dicas específicas
-    if (error.message.includes('Authentication failed')) {
-      console.log('🔐 Problema de autenticação:');
-      console.log('  1. Verifique usuário/senha no .env');
-      console.log('  2. No Atlas: Database Access → Verifique permissões');
-      console.log('  3. Caracteres especiais na senha? Use URL encoding');
+    // Diagnóstico
+    if (error.message.includes('bad auth')) {
+      console.log('💡 Dica: Verifique usuário e senha no .env');
+    }
+    if (error.message.includes('ENOTFOUND')) {
+      console.log('💡 Dica: Problema de internet/DNS');
     }
     
     process.exit(1);
   }
 };
 
+// Exporta a FUNÇÃO de conexão
 module.exports = connectDB;
