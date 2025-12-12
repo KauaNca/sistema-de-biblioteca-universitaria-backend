@@ -1,12 +1,13 @@
-// src/app.js - VERSÃO SIMPLIFICADA
+// src/app.js - ADICIONE ESTAS LINHAS
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/database');
 
-// Importar rotas (SEM auth)
+// Importar rotas
 const livroRoutes = require('./routes/livroRouter');
 const autorRoutes = require('./routes/autorRouter');
 const alunoRoutes = require('./routes/alunoRouter');
+const emprestimoRoutes = require('./routes/emprestimoRouter'); // ← NOVA LINHA
 
 // Conectar ao banco
 connectDB();
@@ -18,10 +19,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Rotas (TODAS públicas)
+// Rotas
 app.use('/api/livros', livroRoutes);
 app.use('/api/autores', autorRoutes);
 app.use('/api/alunos', alunoRoutes);
+app.use('/api/emprestimos', emprestimoRoutes);
 
 // Rota raiz SIMPLIFICADA
 app.get('/', (req, res) => {
